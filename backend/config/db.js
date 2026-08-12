@@ -20,16 +20,24 @@ const sequelize = new Sequelize(
 );
 
 const connectDB = async () => {
-  try {
-    await sequelize.authenticate();
-    console.log(`MySQL Connected: ${sequelize.config.host}/${sequelize.config.database}`);
+  const host = sequelize.config.host;
+  const maxRetries = 5;
 
-    // Sync all models — creates tables if they don't exist
-    await sequelize.sync({ alter: true });
-    console.log('Database tables synced');
-  } catch (error) {
-    console.error(`MySQL Connection Error: ${error.message}`);
-    process.exit(1);
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      await sequelize.authenticate();
+      console.log(`MySQL Connected: ${host}/${sequelize.config.database}`);
+
+      // Sync all models — creates tables if they don't exist
+      await sequelize.sync({ alter: true });
+      console.log('Database tables synced');
+      return;
+    } catch (error) {
+      console.error(`MySQL Connection Error (attempt ${attempt}/${maxRetries}): ${error.message}`);
+      console.error(`  Resolved config -> host: ${host}, port: ${sequelize.config.port}, database: ${sequelize.config.database}, user: ${sequelize.config.username}`);
+      if (attempt === maxRetries) process.exit(1);
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+    }
   }
 };
 
