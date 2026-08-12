@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import connectDB from './config/db.js';
+import { seedAdminIfMissing } from './seedAdmin.js';
 
 // Route imports
 import authRoutes from './routes/authRoutes.js';
@@ -25,8 +26,10 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Connect to MySQL
-connectDB();
+// Connect to MySQL, then ensure the default admin account exists
+connectDB()
+  .then(seedAdminIfMissing)
+  .catch((err) => console.error('Startup DB/seed error:', err.message));
 
 // ==================== MIDDLEWARE ====================
 app.use(cors({

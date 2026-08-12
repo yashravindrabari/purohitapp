@@ -1,19 +1,20 @@
 import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import connectDB from './config/db.js';
 import { User } from './models/index.js';
 
 dotenv.config();
 
-const seedAdmin = async () => {
+// Creates the default admin account if no admin exists yet.
+// Safe to call on every boot; returns silently when an admin already exists.
+export const seedAdminIfMissing = async () => {
   try {
-    await connectDB();
-
-    // Check if admin already exists
     const existingAdmin = await User.findOne({ where: { role: 'admin' } });
     if (existingAdmin) {
       console.log('Admin user already exists:', existingAdmin.email);
-      process.exit(0);
+      return existingAdmin;
     }
 
     // Create default admin user
@@ -33,11 +34,24 @@ const seedAdmin = async () => {
     console.log('  Email: admin@purohitapp.com');
     console.log('  Password: admin123');
     console.log('  ID:', admin.id);
-    process.exit(0);
+    return admin;
   } catch (error) {
     console.error('Seed error:', error.message);
-    process.exit(1);
+    throw error;
   }
 };
 
-seedAdmin();
+// CLI mode: `npm run seed` — connect, seed, then exit
+const isDirectRun = process.argv[1] &&
+  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (isDirectRun) {
+  try {
+    await connectDB();
+    await seedAdminIfMissing();
+    process.exit(0);
+  } catch (error) {
+    console.error('Seed failed:', error.message);
+    process.exit(1);
+  }
+}
