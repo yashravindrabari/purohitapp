@@ -34,3 +34,6 @@ public.zip
 *.njsproj
 *.sln
 *.sw?
+
+.vercel
+.vercel-tmp/
