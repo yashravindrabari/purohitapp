@@ -1,0 +1,25 @@
+super admin
+- create webpuja db 
+- accept the form of purohit
+
+
+
+
+zonal purohit 
+
+- will fill out the form of purohit after superadmin approves 
+- can add pujas in db 
+
+
+
+purohit dashboard 
+
+- can add pujas (from avail db with rate)
+- can accept puja request 
+- revenue display 
+- activity 
+
+
+
+
+
